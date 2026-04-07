@@ -38,12 +38,31 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import scheduler_tasks
 
 # Initialize the scheduler
+# To prevent multiple schedulers from running when using gunicorn with multiple workers,
+# we use a file lock to ensure only one worker starts the background tasks.
+import fcntl
+import atexit
+
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=scheduler_tasks.check_tpu_status, trigger="interval", minutes=5)
 
-# In dev mode with Werkzeug, it runs the app twice. This prevents the scheduler from starting twice.
-if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
-    scheduler.start()
+try:
+    # Open a file lock
+    f = open("instance/scheduler.lock", "wb")
+    fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+    # In dev mode with Werkzeug, it runs the app twice. This prevents the scheduler from starting twice.
+    if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+        scheduler.start()
+        print("Scheduler started in this worker.")
+
+    def unlock():
+        fcntl.flock(f, fcntl.LOCK_UN)
+        f.close()
+    atexit.register(unlock)
+except IOError:
+    # Another worker already has the lock, do nothing
+    pass
 
 if __name__ == '__main__':
     try:

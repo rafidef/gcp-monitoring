@@ -69,7 +69,15 @@ pip install gunicorn
 2. Run the application in the background:
 ```bash
 # Runs gunicorn on port 5000 with 2 worker threads in the background
-gunicorn --workers 2 --bind 0.0.0.0:5000 app:app --daemon
+# The --daemon flag runs the process silently in the background.
+# We use log files to capture the output.
+gunicorn --workers 2 --bind 0.0.0.0:5000 app:app --daemon --access-logfile access.log --error-logfile error.log
+```
+
+You can view the logs at any time using:
+```bash
+tail -f access.log
+tail -f error.log
 ```
 
 *For a robust setup, consider placing Gunicorn behind a reverse proxy like **Nginx** and securing it with a free SSL certificate from **Let's Encrypt**.*
