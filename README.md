@@ -20,6 +20,8 @@ Google Cloud Spot TPUs are highly cost-effective but suffer from frequent preemp
 - **🔑 Multi-Account Support:** Upload and manage multiple Google Cloud Projects using isolated Service Account JSON keys.
 - **🔔 Real-time Notifications:** Get alerts sent directly to a Discord Webhook or a Telegram Bot whenever a TPU changes state (e.g., ACTIVE, PREEMPTED, CREATING).
 - **🛡️ Built for Security:** Features secure password-hashed admin authentication, strictly scoped file handling, CSRF token validation on all forms, and automated cryptographic session key generation.
+- **🌍 Global TPU Listing:** Shows all TPUs (both managed by the app and unmanaged) across all zones, ensuring you always have a complete view of your active Google Cloud compute.
+- **📊 Real-Time Metrics Monitoring:** Direct integration with Google Cloud Monitoring to provide dynamic Chart.js dashboards showing Memory and CPU utilization grouped by worker, all seamlessly rendered in the UI.
 
 ---
 
