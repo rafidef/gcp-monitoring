@@ -3,6 +3,14 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from models import GCPAccount
 import requests
+import datetime
+from google.cloud import monitoring_v3
+
+def get_monitoring_client(account: GCPAccount):
+    credentials = get_credentials(account)
+    if not credentials:
+        return None
+    return monitoring_v3.MetricServiceClient(credentials=credentials)
 
 def get_credentials(account: GCPAccount):
     """Load credentials from the stored JSON file."""
@@ -62,6 +70,48 @@ def list_tpus(account: GCPAccount, zone: str):
         return nodes
     except Exception as e:
         print(f"Error listing TPUs: {e}")
+        return []
+
+
+def list_all_tpus(account: GCPAccount):
+    """Lists all TPUs across all zones for a given GCP account."""
+    credentials = get_credentials(account)
+    if not credentials:
+        return []
+
+    try:
+        tpu = build('tpu', 'v2', credentials=credentials)
+        parent = f"projects/{account.project_id}/locations/-"
+
+        request = tpu.projects().locations().nodes().list(parent=parent)
+
+        all_nodes = []
+        while request is not None:
+            response = request.execute()
+            if 'nodes' in response:
+                for node in response['nodes']:
+                    # Extract short name and zone
+                    # Name format: projects/{project}/locations/{zone}/nodes/{node_id}
+                    parts = node['name'].split('/')
+                    zone = parts[3]
+                    node_id = parts[5]
+
+                    is_managed = False
+                    labels = node.get('labels', {})
+                    if labels.get('managed-by') == 'gcp-tpu-manager' or labels.get('managed-by') == 'tpu-manager':
+                        is_managed = True
+
+                    enriched_node = dict(node)
+                    enriched_node['short_name'] = node_id
+                    enriched_node['zone'] = zone
+                    enriched_node['is_managed'] = is_managed
+                    all_nodes.append(enriched_node)
+
+            request = tpu.projects().locations().nodes().list_next(previous_request=request, previous_response=response)
+
+        return all_nodes
+    except Exception as e:
+        print(f"Error listing all TPUs: {e}")
         return []
 
 def get_tpu_state(account: GCPAccount, zone: str, name: str):
@@ -136,7 +186,7 @@ def create_standard_tpu(account: GCPAccount, managed_tpu):
             except:
                 pass
 
-        labels['managed-by'] = 'tpu-manager'
+        labels['managed-by'] = 'gcp-tpu-manager'
 
         node_spec = {
             'acceleratorType': managed_tpu.tpu_type,
@@ -201,7 +251,7 @@ def create_queued_tpu(account: GCPAccount, managed_tpu):
                 pass
 
         # Add our management label
-        labels['managed-by'] = 'tpu-manager'
+        labels['managed-by'] = 'gcp-tpu-manager'
 
         # Build node spec
         node_spec = {
@@ -286,3 +336,73 @@ def get_queued_resource_state(account: GCPAccount, zone: str, name: str):
              return "DELETED"
          print(f"Error getting Queued Resource state: {e}")
          return "ERROR"
+
+
+def get_tpu_metrics(account: GCPAccount, zone: str, tpu_name: str, metric_type: str, time_range_hours: int = 1):
+    """Fetches metric data for a specific TPU grouped by worker."""
+    client = get_monitoring_client(account)
+    if not client:
+        return []
+
+    project_name = f"projects/{account.project_id}"
+
+    # GCP Monitoring interval
+    now = datetime.datetime.now(datetime.timezone.utc)
+    start_time = now - datetime.timedelta(hours=time_range_hours)
+
+    interval = monitoring_v3.TimeInterval(
+        {
+            "end_time": {"seconds": int(now.timestamp())},
+            "start_time": {"seconds": int(start_time.timestamp())},
+        }
+    )
+
+    filter_str = f'metric.type="{metric_type}" AND resource.labels.node_id="{tpu_name}" AND resource.labels.zone="{zone}"'
+
+    # Optional alignment (to keep payload small)
+    aggregation = monitoring_v3.Aggregation(
+        {
+            "alignment_period": {"seconds": 60},  # 1 point per minute
+            "per_series_aligner": monitoring_v3.Aggregation.Aligner.ALIGN_MEAN,
+        }
+    )
+
+    results = []
+    try:
+        series = client.list_time_series(
+            request={
+                "name": project_name,
+                "filter": filter_str,
+                "interval": interval,
+                "view": monitoring_v3.ListTimeSeriesRequest.TimeSeriesView.FULL,
+                "aggregation": aggregation
+            }
+        )
+
+        for s in series:
+            # Get worker ID from metric labels, default to 0 if not present
+            worker_id = s.metric.labels.get('worker_id', '0')
+
+            points = []
+            for point in s.points:
+                # Value can be double, int, etc.
+                val = point.value.double_value
+                if not val and point.value.int64_value:
+                    val = float(point.value.int64_value)
+
+                # Timestamp in seconds
+                ts = point.interval.start_time.timestamp()
+                points.append({
+                    "timestamp": ts,
+                    "value": val
+                })
+
+            results.append({
+                "worker_id": worker_id,
+                "points": sorted(points, key=lambda x: x['timestamp'])
+            })
+
+    except Exception as e:
+        print(f"Error fetching metrics: {e}")
+
+    return results
