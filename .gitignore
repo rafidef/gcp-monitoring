@@ -5,3 +5,4 @@ instance/
 *.db
 service_accounts/
 .env
+*.log
