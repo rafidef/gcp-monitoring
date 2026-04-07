@@ -1,45 +1,97 @@
 {% extends "base.html" %}
 
+{% block title %}Settings{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card mb-4">
-            <div class="card-header bg-body-secondary">
-                <h5 class="mb-0">System Settings</h5>
+<div class="mb-6">
+    <h2 class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">System Settings</h2>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Configure global application preferences and notifications</p>
+</div>
+
+<div class="max-w-3xl">
+    <form method="POST" action="{{ url_for('settings') }}" class="space-y-6">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <!-- Notifications Card -->
+        <div class="card overflow-hidden">
+            <div class="card-header bg-slate-50/80 dark:bg-slate-800/80">
+                <h3 class="text-base font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+                    <div class="p-1.5 bg-indigo-100 dark:bg-indigo-900/50 rounded-md text-indigo-600 dark:text-indigo-400">
+                        <i data-lucide="bell" class="w-4 h-4"></i>
+                    </div>
+                    Notifications
+                </h3>
             </div>
-            <div class="card-body">
-                <form method="POST" action="{{ url_for('settings') }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <h6 class="mb-3 border-bottom pb-2">Notifications</h6>
 
-                    <div class="mb-3">
-                        <label for="discord_webhook_url" class="form-label">Discord Webhook URL</label>
-                        <input type="url" class="form-control" id="discord_webhook_url" name="discord_webhook_url" value="{{ settings.discord_webhook_url or '' }}">
-                        <div class="form-text">Leave blank to disable Discord notifications.</div>
+            <div class="p-6 space-y-6">
+                <!-- Discord -->
+                <div>
+                    <label for="discord_webhook_url" class="form-label flex items-center gap-2">
+                        <i data-lucide="message-square" class="w-4 h-4 text-[#5865F2]"></i>
+                        Discord Webhook URL
+                    </label>
+                    <input type="url" class="form-control" id="discord_webhook_url" name="discord_webhook_url" value="{{ settings.discord_webhook_url or '' }}" placeholder="https://discord.com/api/webhooks/...">
+                    <p class="text-xs text-slate-500 mt-1.5">Leave blank to disable Discord notifications.</p>
+                </div>
+
+                <hr class="border-slate-200 dark:border-slate-700/60">
+
+                <!-- Telegram -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <i data-lucide="send" class="w-4 h-4 text-[#229ED9]"></i>
+                        Telegram Configuration
                     </div>
 
-                    <div class="mb-3">
-                        <label for="telegram_bot_token" class="form-label">Telegram Bot Token</label>
-                        <input type="text" class="form-control" id="telegram_bot_token" name="telegram_bot_token" value="{{ settings.telegram_bot_token or '' }}">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="telegram_bot_token" class="form-label">Bot Token</label>
+                            <input type="text" class="form-control" id="telegram_bot_token" name="telegram_bot_token" value="{{ settings.telegram_bot_token or '' }}" placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11">
+                        </div>
+                        <div>
+                            <label for="telegram_chat_id" class="form-label">Chat ID</label>
+                            <input type="text" class="form-control" id="telegram_chat_id" name="telegram_chat_id" value="{{ settings.telegram_chat_id or '' }}" placeholder="-1001234567890">
+                        </div>
                     </div>
-
-                    <div class="mb-4">
-                        <label for="telegram_chat_id" class="form-label">Telegram Chat ID</label>
-                        <input type="text" class="form-control" id="telegram_chat_id" name="telegram_chat_id" value="{{ settings.telegram_chat_id or '' }}">
-                        <div class="form-text">Both Token and Chat ID are required for Telegram notifications.</div>
-                    </div>
-
-                    <h6 class="mb-3 border-bottom pb-2">Security</h6>
-                    <div class="mb-4">
-                        <label for="new_password" class="form-label">Change Admin Password</label>
-                        <input type="password" class="form-control" id="new_password" name="new_password" placeholder="Enter new password to change">
-                        <div class="form-text">Leave blank if you do not want to change the password.</div>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary">Save Settings</button>
-                </form>
+                    <p class="text-xs text-slate-500 mt-1.5 flex items-start gap-1">
+                        <i data-lucide="info" class="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5"></i>
+                        Both Token and Chat ID are required for Telegram notifications to function.
+                    </p>
+                </div>
             </div>
         </div>
-    </div>
+
+        <!-- Security Card -->
+        <div class="card overflow-hidden">
+            <div class="card-header bg-slate-50/80 dark:bg-slate-800/80">
+                <h3 class="text-base font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+                    <div class="p-1.5 bg-rose-100 dark:bg-rose-900/50 rounded-md text-rose-600 dark:text-rose-400">
+                        <i data-lucide="shield" class="w-4 h-4"></i>
+                    </div>
+                    Security
+                </h3>
+            </div>
+
+            <div class="p-6">
+                <div class="max-w-md relative">
+                    <label for="new_password" class="form-label">Change Admin Password</label>
+                    <div class="relative">
+                        <input type="password" class="form-control pr-10" id="new_password" name="new_password" placeholder="Enter new password to change">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i data-lucide="lock" class="h-4 w-4 text-slate-400"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1.5">Leave blank if you do not want to change the current password.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end pt-2 pb-8">
+            <button type="submit" class="btn-primary flex items-center gap-2 shadow-md">
+                <i data-lucide="save" class="w-4 h-4"></i>
+                Save Settings
+            </button>
+        </div>
+    </form>
 </div>
 {% endblock %}
