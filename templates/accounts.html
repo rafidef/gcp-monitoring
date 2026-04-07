@@ -9,6 +9,7 @@
             </div>
             <div class="card-body">
                 <form method="POST" action="{{ url_for('accounts') }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-3">
                         <label for="name" class="form-label">Account Name/Alias</label>
                         <input type="text" class="form-control" id="name" name="name" required placeholder="e.g. Personal GCP">
@@ -44,6 +45,7 @@
                             <td class="align-middle"><code>{{ account.project_id }}</code></td>
                             <td class="text-end">
                                 <form method="POST" action="{{ url_for('delete_account', account_id=account.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this account?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                                 </form>
                             </td>

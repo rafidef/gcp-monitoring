@@ -8,3 +8,4 @@ requests==2.31.0
 google-cloud-tpu==1.10.0
 google-cloud-compute==1.15.0
 Werkzeug==3.0.1
+Flask-WTF==1.2.1

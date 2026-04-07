@@ -69,6 +69,7 @@
                     <td class="align-middle">{{ tpu.recreation_count }}</td>
                     <td class="text-end align-middle">
                         <form method="POST" action="{{ url_for('delete_managed_tpu', tpu_id=tpu.id) }}" class="d-inline" onsubmit="return confirm('Delete this TPU from GCP and stop tracking it?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                         </form>
                     </td>

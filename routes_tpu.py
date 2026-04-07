@@ -92,21 +92,20 @@ def create_tpu():
             last_known_state='CREATING'
         )
 
-        db.session.add(new_tpu)
-        db.session.commit()
-
-        # Trigger creation via GCP API
+        # Trigger creation via GCP API FIRST
         if enable_queue:
             success, response = gcp_utils.create_queued_tpu(account, new_tpu)
         else:
             success, response = gcp_utils.create_standard_tpu(account, new_tpu)
 
         if success:
+            # ONLY save to database if GCP API creation was successful
+            db.session.add(new_tpu)
+            db.session.commit()
             flash(f"Successfully requested creation of TPU {base_name}", "success")
         else:
             flash(f"Error requesting TPU creation: {response}", "error")
-            new_tpu.last_known_state = 'ERROR'
-            db.session.commit()
+            # Do NOT save to db if initial creation fails, preventing infinite loop
 
         return redirect(url_for('list_tpus_view', account_id=account.id))
 

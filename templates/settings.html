@@ -9,6 +9,7 @@
             </div>
             <div class="card-body">
                 <form method="POST" action="{{ url_for('settings') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <h6 class="mb-3 border-bottom pb-2">Notifications</h6>
 
                     <div class="mb-3">
