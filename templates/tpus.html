@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2>Managed TPUs</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <form class="d-flex justify-content-end" method="GET" action="{{ url_for('list_tpus_view') }}">
+            <select name="account_id" class="form-select w-auto me-2" onchange="this.form.submit()">
+                <option value="">Select GCP Account...</option>
+                {% for acc in accounts %}
+                <option value="{{ acc.id }}" {% if selected_account and selected_account.id == acc.id %}selected{% endif %}>{{ acc.name }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+</div>
+
+{% if selected_account %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">TPUs in {{ selected_account.name }}</h5>
+        <a href="{{ url_for('create_tpu', account_id=selected_account.id) }}" class="btn btn-sm btn-light">Create New TPU</a>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Zone</th>
+                    <th>Type</th>
+                    <th>Version</th>
+                    <th>Spot</th>
+                    <th>State</th>
+                    <th>Recreations</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tpu in managed_tpus %}
+                <tr>
+                    <td class="align-middle">
+                        <strong>{{ tpu.current_name }}</strong><br>
+                        <small class="text-muted">Base: {{ tpu.base_name }}</small>
+                    </td>
+                    <td class="align-middle">{{ tpu.zone }}</td>
+                    <td class="align-middle">{{ tpu.tpu_type }}</td>
+                    <td class="align-middle">{{ tpu.software_version }}</td>
+                    <td class="align-middle">
+                        {% if tpu.is_spot %}
+                            <span class="badge bg-warning text-dark">Yes</span>
+                        {% else %}
+                            <span class="badge bg-secondary">No</span>
+                        {% endif %}
+                    </td>
+                    <td class="align-middle">
+                        {% if tpu.last_known_state == 'ACTIVE' %}
+                            <span class="badge bg-success">{{ tpu.last_known_state }}</span>
+                        {% elif tpu.last_known_state in ['CREATING', 'STARTING', 'ACCEPTED', 'PROVISIONING'] %}
+                            <span class="badge bg-info">{{ tpu.last_known_state }}</span>
+                        {% elif tpu.last_known_state in ['PREEMPTED', 'STOPPED', 'SUSPENDED'] %}
+                            <span class="badge bg-warning text-dark">{{ tpu.last_known_state }}</span>
+                        {% else %}
+                            <span class="badge bg-danger">{{ tpu.last_known_state }}</span>
+                        {% endif %}
+                        <br><small class="text-muted">{{ tpu.last_checked_at.strftime('%H:%M:%S') if tpu.last_checked_at else 'Never' }}</small>
+                    </td>
+                    <td class="align-middle">{{ tpu.recreation_count }}</td>
+                    <td class="text-end align-middle">
+                        <form method="POST" action="{{ url_for('delete_managed_tpu', tpu_id=tpu.id) }}" class="d-inline" onsubmit="return confirm('Delete this TPU from GCP and stop tracking it?');">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">No TPUs managed by this app found for this account.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% elif accounts %}
+<div class="alert alert-info">Please select a GCP Account from the dropdown above to view or manage TPUs.</div>
+{% else %}
+<div class="alert alert-warning">No GCP Accounts configured. Please go to <a href="{{ url_for('accounts') }}">GCP Accounts</a> to add one first.</div>
+{% endif %}
+{% endblock %}

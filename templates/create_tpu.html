@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Create TPU Node</h5>
+                <small>Account: {{ account.name }}</small>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('create_tpu', account_id=account.id) }}">
+                    <!-- Basic Info -->
+                    <h6 class="border-bottom pb-2 mb-3">Basic Information</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" required pattern="[a-z]([-a-z0-9]*[a-z0-9])?" title="Must start with lowercase letter, followed by lowercase letters, numbers, or hyphens, and cannot end with a hyphen.">
+                            <div class="form-text">If preempted, the app may append -1 etc to this name.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="zone" class="form-label">Zone <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="zone" name="zone" required placeholder="e.g. us-central1-a" onchange="loadSubnetworks()">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="tpu_type" class="form-label">TPU Type <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="tpu_type" name="tpu_type" required placeholder="e.g. v2-8, v3-8">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="software_version" class="form-label">TPU Software Version <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="software_version" name="software_version" required placeholder="e.g. tpu-vm-tf-2.15.0">
+                        </div>
+                    </div>
+
+                    <!-- Scheduling & Toggles -->
+                    <h6 class="border-bottom pb-2 mb-3 mt-4">Scheduling & Options</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="enable_queue" name="enable_queue" checked>
+                                <label class="form-check-label" for="enable_queue">Enable Queue (Queued Resources)</label>
+                            </div>
+                            <div class="form-text mb-3">Start request: Immediately. No cancel request.</div>
+
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="is_spot" name="is_spot" checked>
+                                <label class="form-check-label" for="is_spot">Spot / Preemptible VM</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Network -->
+                    <h6 class="border-bottom pb-2 mb-3 mt-4">Network Settings</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="network" class="form-label">Network</label>
+                            <input type="text" class="form-control" id="network" name="network" value="default" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="use_public_ip" name="use_public_ip" onchange="loadSubnetworks()">
+                                <label class="form-check-label" for="use_public_ip">Assign External Public IP</label>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <label for="subnetwork" class="form-label">Subnetwork</label>
+                            <select class="form-select" id="subnetwork" name="subnetwork">
+                                <option value="">Select Zone first to load subnetworks...</option>
+                            </select>
+                            <div class="form-text" id="subnet_help"></div>
+                        </div>
+                    </div>
+
+                    <!-- Metadata -->
+                    <h6 class="border-bottom pb-2 mb-3 mt-4 d-flex justify-content-between align-items-center">
+                        Metadata
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addMetadataRow()">Add Row</button>
+                    </h6>
+                    <div id="metadata-container">
+                        <!-- We will always have 2 empty rows by default as requested -->
+                        <div class="row mb-2">
+                            <div class="col-md-5"><input type="text" class="form-control form-control-sm" name="metadata_key[]" placeholder="Key"></div>
+                            <div class="col-md-6"><input type="text" class="form-control form-control-sm" name="metadata_value[]" placeholder="Value"></div>
+                            <div class="col-md-1"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="this.parentElement.parentElement.remove()">X</button></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-5"><input type="text" class="form-control form-control-sm" name="metadata_key[]" placeholder="Key"></div>
+                            <div class="col-md-6"><input type="text" class="form-control form-control-sm" name="metadata_value[]" placeholder="Value"></div>
+                            <div class="col-md-1"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="this.parentElement.parentElement.remove()">X</button></div>
+                        </div>
+                    </div>
+
+                    <!-- Labels -->
+                    <h6 class="border-bottom pb-2 mb-3 mt-4 d-flex justify-content-between align-items-center">
+                        Labels (Optional)
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addLabelRow()">Add Row</button>
+                    </h6>
+                    <div id="labels-container">
+                        <div class="row mb-2">
+                            <div class="col-md-5"><input type="text" class="form-control form-control-sm" name="label_key[]" placeholder="Key"></div>
+                            <div class="col-md-6"><input type="text" class="form-control form-control-sm" name="label_value[]" placeholder="Value"></div>
+                            <div class="col-md-1"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="this.parentElement.parentElement.remove()">X</button></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-end">
+                        <a href="{{ url_for('list_tpus_view', account_id=account.id) }}" class="btn btn-secondary me-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Create TPU</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function addMetadataRow() {
+        const container = document.getElementById('metadata-container');
+        const row = document.createElement('div');
+        row.className = 'row mb-2';
+        row.innerHTML = `
+            <div class="col-md-5"><input type="text" class="form-control form-control-sm" name="metadata_key[]" placeholder="Key"></div>
+            <div class="col-md-6"><input type="text" class="form-control form-control-sm" name="metadata_value[]" placeholder="Value"></div>
+            <div class="col-md-1"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="this.parentElement.parentElement.remove()">X</button></div>
+        `;
+        container.appendChild(row);
+    }
+
+    function addLabelRow() {
+        const container = document.getElementById('labels-container');
+        const row = document.createElement('div');
+        row.className = 'row mb-2';
+        row.innerHTML = `
+            <div class="col-md-5"><input type="text" class="form-control form-control-sm" name="label_key[]" placeholder="Key"></div>
+            <div class="col-md-6"><input type="text" class="form-control form-control-sm" name="label_value[]" placeholder="Value"></div>
+            <div class="col-md-1"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="this.parentElement.parentElement.remove()">X</button></div>
+        `;
+        container.appendChild(row);
+    }
+
+    function loadSubnetworks() {
+        const zone = document.getElementById('zone').value;
+        const usePublicIp = document.getElementById('use_public_ip').checked;
+        const select = document.getElementById('subnetwork');
+        const helpText = document.getElementById('subnet_help');
+
+        if (!zone || zone.length < 5) return;
+
+        select.innerHTML = '<option value="">Loading subnetworks...</option>';
+
+        fetch(`{{ url_for('api_subnetworks') }}?account_id={{ account.id }}&zone=${zone}`)
+            .then(response => response.json())
+            .then(data => {
+                select.innerHTML = '';
+                if (data.length === 0) {
+                    select.innerHTML = '<option value="">No subnetworks found</option>';
+                    return;
+                }
+
+                // Assuming we want to show all for now, in a real app we might filter
+                // based on whether the subnetwork has private google access enabled etc.
+                // For now, we present what the API returns.
+                data.forEach(subnet => {
+                    const option = document.createElement('option');
+                    // Get short name
+                    const nameParts = subnet.name.split('/');
+                    const shortName = nameParts[nameParts.length - 1];
+                    option.value = shortName;
+                    option.textContent = shortName + ` (Network: ${subnet.network})`;
+
+                    // If default network and default subnet, auto select
+                    if (shortName === 'default') {
+                        option.selected = true;
+                    }
+
+                    select.appendChild(option);
+                });
+
+                if (usePublicIp) {
+                    helpText.textContent = "Showing subnetworks available for External IP.";
+                } else {
+                    helpText.textContent = "Showing subnetworks. Note: Only subnetworks with Private Google Access enabled support TPU without External IP.";
+                }
+            })
+            .catch(error => {
+                console.error('Error loading subnetworks:', error);
+                select.innerHTML = '<option value="">Error loading subnetworks</option>';
+            });
+    }
+</script>
+{% endblock %}
