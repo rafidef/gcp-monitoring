@@ -1,16 +1,62 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TPU Manager</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { padding-top: 60px; }
+        body {
+            font-family: 'Inter', sans-serif;
+            padding-top: 76px;
+            background-color: var(--bs-body-bg);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .navbar {
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--bs-border-color);
+        }
+        .card {
+            border: 1px solid var(--bs-border-color-translucent);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+        .card-header {
+            border-bottom: 1px solid var(--bs-border-color-translucent);
+            border-radius: 12px 12px 0 0 !important;
+            padding: 1rem 1.25rem;
+        }
+        .form-control, .form-select {
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+        }
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+        }
+        .badge {
+            font-weight: 500;
+            padding: 0.4em 0.8em;
+            border-radius: 6px;
+        }
+        /* Theme toggle switch styles */
+        .theme-switch {
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--bs-border-color);
+            background: var(--bs-tertiary-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <nav class="navbar navbar-expand-lg fixed-top bg-body-tertiary">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ url_for('index') }}">TPU Manager</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -28,7 +74,12 @@
                         <a class="nav-link" href="{{ url_for('settings') }}">Settings</a>
                     </li>
                 </ul>
-                <ul class="navbar-nav">
+                <ul class="navbar-nav align-items-center">
+                    <li class="nav-item me-3">
+                        <button class="theme-switch" id="themeToggle" title="Toggle Theme">
+                            🌓
+                        </button>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
                     </li>
@@ -52,7 +103,27 @@
         {% block content %}{% endblock %}
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Theme toggling logic
+        const htmlElement = document.documentElement;
+        const themeToggle = document.getElementById('themeToggle');
+
+        // Check for saved theme preference or use system preference
+        const savedTheme = localStorage.getItem('tpu-manager-theme');
+        if (savedTheme) {
+            htmlElement.setAttribute('data-bs-theme', savedTheme);
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            htmlElement.setAttribute('data-bs-theme', 'dark');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            htmlElement.setAttribute('data-bs-theme', newTheme);
+            localStorage.setItem('tpu-manager-theme', newTheme);
+        });
+    </script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

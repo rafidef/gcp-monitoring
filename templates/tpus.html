@@ -18,14 +18,14 @@
 </div>
 
 {% if selected_account %}
-<div class="card shadow-sm mb-4">
-    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+<div class="card mb-4">
+    <div class="card-header bg-body-secondary d-flex justify-content-between align-items-center">
         <h5 class="mb-0">TPUs in {{ selected_account.name }}</h5>
-        <a href="{{ url_for('create_tpu', account_id=selected_account.id) }}" class="btn btn-sm btn-light">Create New TPU</a>
+        <a href="{{ url_for('create_tpu', account_id=selected_account.id) }}" class="btn btn-sm btn-primary">Create New TPU</a>
     </div>
     <div class="card-body p-0">
-        <table class="table table-striped mb-0">
-            <thead class="table-light">
+        <table class="table table-striped mb-0" style="border-radius: 0 0 12px 12px; overflow: hidden;">
+            <thead>
                 <tr>
                     <th>Name</th>
                     <th>Zone</th>

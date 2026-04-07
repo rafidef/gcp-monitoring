@@ -1,6 +1,5 @@
 import datetime
-from app import app, db
-from models import ManagedTPU, GCPAccount
+from models import db, ManagedTPU, GCPAccount
 import gcp_utils
 import notifications
 
@@ -48,6 +47,7 @@ def recreate_tpu(tpu: ManagedTPU, account: GCPAccount):
         notifications.notify_all("TPU Recreation Failed", f"Failed to recreate TPU `{tpu.base_name}`.\nError: {response}", 15158332) # Red
 
 def check_tpu_status():
+    from app import app
     with app.app_context():
         tpus = ManagedTPU.query.all()
         for tpu in tpus:

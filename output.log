@@ -1,0 +1,15 @@
+Scheduler started in this worker.
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.2:5000
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [07/Apr/2026 03:21:01] "GET /login HTTP/1.1" 200 -
+127.0.0.1 - - [07/Apr/2026 03:21:02] "[32mPOST /login HTTP/1.1[0m" 302 -
+127.0.0.1 - - [07/Apr/2026 03:21:02] "[32mGET / HTTP/1.1[0m" 302 -
+127.0.0.1 - - [07/Apr/2026 03:21:02] "GET /tpus HTTP/1.1" 200 -
+127.0.0.1 - - [07/Apr/2026 03:21:02] "GET /accounts HTTP/1.1" 200 -
+127.0.0.1 - - [07/Apr/2026 03:21:02] "[32mPOST /accounts HTTP/1.1[0m" 302 -
+127.0.0.1 - - [07/Apr/2026 03:21:02] "GET /accounts HTTP/1.1" 200 -
+127.0.0.1 - - [07/Apr/2026 03:21:02] "GET /tpus/create?account_id=1 HTTP/1.1" 200 -

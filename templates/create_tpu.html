@@ -3,12 +3,12 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-8">
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <div class="card mb-4">
+            <div class="card-header bg-body-secondary d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Create TPU Node</h5>
-                <small>Account: {{ account.name }}</small>
+                <small class="text-muted">Account: {{ account.name }}</small>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <form method="POST" action="{{ url_for('create_tpu', account_id=account.id) }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <!-- Basic Info -->
@@ -21,18 +21,108 @@
                         </div>
                         <div class="col-md-6">
                             <label for="zone" class="form-label">Zone <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="zone" name="zone" required placeholder="e.g. us-central1-a" onchange="loadSubnetworks()">
+                            <select class="form-select" id="zone" name="zone" required onchange="loadSubnetworks()">
+                                <option value="">Select a zone...</option>
+                                <optgroup label="US Central">
+                                    <option value="us-central1-a">us-central1-a</option>
+                                    <option value="us-central1-b">us-central1-b</option>
+                                    <option value="us-central1-c">us-central1-c</option>
+                                    <option value="us-central1-f">us-central1-f</option>
+                                    <option value="us-central2-b">us-central2-b</option>
+                                </optgroup>
+                                <optgroup label="US East">
+                                    <option value="us-east1-c">us-east1-c</option>
+                                    <option value="us-east1-d">us-east1-d</option>
+                                    <option value="us-east4-a">us-east4-a</option>
+                                    <option value="us-east4-b">us-east4-b</option>
+                                    <option value="us-east4-c">us-east4-c</option>
+                                    <option value="us-east5-a">us-east5-a</option>
+                                    <option value="us-east5-b">us-east5-b</option>
+                                    <option value="us-east5-c">us-east5-c</option>
+                                </optgroup>
+                                <optgroup label="Europe">
+                                    <option value="europe-west4-a">europe-west4-a</option>
+                                    <option value="europe-west4-b">europe-west4-b</option>
+                                    <option value="europe-west4-c">europe-west4-c</option>
+                                </optgroup>
+                                <optgroup label="Asia">
+                                    <option value="asia-southeast1-b">asia-southeast1-b</option>
+                                    <option value="asia-southeast1-c">asia-southeast1-c</option>
+                                </optgroup>
+                            </select>
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="tpu_type" class="form-label">TPU Type <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="tpu_type" name="tpu_type" required placeholder="e.g. v2-8, v3-8">
+                            <select class="form-select" id="tpu_type" name="tpu_type" required>
+                                <option value="">Select TPU type...</option>
+                                <optgroup label="v2">
+                                    <option value="v2-8">v2-8</option>
+                                    <option value="v2-32">v2-32</option>
+                                    <option value="v2-128">v2-128</option>
+                                    <option value="v2-256">v2-256</option>
+                                    <option value="v2-512">v2-512</option>
+                                </optgroup>
+                                <optgroup label="v3">
+                                    <option value="v3-8">v3-8</option>
+                                    <option value="v3-32">v3-32</option>
+                                    <option value="v3-64">v3-64</option>
+                                    <option value="v3-128">v3-128</option>
+                                    <option value="v3-256">v3-256</option>
+                                    <option value="v3-512">v3-512</option>
+                                    <option value="v3-1024">v3-1024</option>
+                                    <option value="v3-2048">v3-2048</option>
+                                </optgroup>
+                                <optgroup label="v4">
+                                    <option value="v4-8">v4-8</option>
+                                    <option value="v4-16">v4-16</option>
+                                    <option value="v4-32">v4-32</option>
+                                    <option value="v4-64">v4-64</option>
+                                    <option value="v4-128">v4-128</option>
+                                    <option value="v4-256">v4-256</option>
+                                    <option value="v4-512">v4-512</option>
+                                    <option value="v4-1024">v4-1024</option>
+                                    <option value="v4-2048">v4-2048</option>
+                                    <option value="v4-4096">v4-4096</option>
+                                </optgroup>
+                                <optgroup label="v5 lite pod">
+                                    <option value="v5litepod-16">v5litepod-16</option>
+                                    <option value="v5litepod-32">v5litepod-32</option>
+                                    <option value="v5litepod-64">v5litepod-64</option>
+                                    <option value="v5litepod-128">v5litepod-128</option>
+                                    <option value="v5litepod-256">v5litepod-256</option>
+                                </optgroup>
+                                <optgroup label="v5p">
+                                    <option value="v5p-8">v5p-8</option>
+                                    <option value="v5p-16">v5p-16</option>
+                                    <option value="v5p-32">v5p-32</option>
+                                    <option value="v5p-64">v5p-64</option>
+                                    <option value="v5p-128">v5p-128</option>
+                                    <option value="v5p-256">v5p-256</option>
+                                </optgroup>
+                            </select>
                         </div>
                         <div class="col-md-6">
                             <label for="software_version" class="form-label">TPU Software Version <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="software_version" name="software_version" required placeholder="e.g. tpu-vm-tf-2.15.0">
+                            <select class="form-select" id="software_version" name="software_version" required>
+                                <option value="">Select version...</option>
+                                <optgroup label="JAX">
+                                    <option value="tpu-ubuntu2204-base">tpu-ubuntu2204-base (JAX)</option>
+                                    <option value="v2-alpha-tpuv5">v2-alpha-tpuv5 (v5 lite)</option>
+                                    <option value="v2-alpha-tpuv5-lite">v2-alpha-tpuv5-lite (v5 lite)</option>
+                                </optgroup>
+                                <optgroup label="PyTorch">
+                                    <option value="tpu-ubuntu2204-base">tpu-ubuntu2204-base (PyTorch/XLA)</option>
+                                </optgroup>
+                                <optgroup label="TensorFlow">
+                                    <option value="tpu-vm-tf-2.16.1">tpu-vm-tf-2.16.1</option>
+                                    <option value="tpu-vm-tf-2.15.0">tpu-vm-tf-2.15.0</option>
+                                    <option value="tpu-vm-tf-2.14.1">tpu-vm-tf-2.14.1</option>
+                                    <option value="tpu-vm-tf-2.13.1">tpu-vm-tf-2.13.1</option>
+                                </optgroup>
+                            </select>
                         </div>
                     </div>
 
