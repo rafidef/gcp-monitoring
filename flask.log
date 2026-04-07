@@ -1,0 +1,33 @@
+Scheduler started in this worker.
+ * Serving Flask app 'app.py'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.2:5000
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [07/Apr/2026 06:20:35] "GET /login HTTP/1.1" 200 -
+127.0.0.1 - - [07/Apr/2026 06:21:57] "GET /login HTTP/1.1" 200 -
+127.0.0.1 - - [07/Apr/2026 06:21:58] "GET /static/css/styles.css HTTP/1.1" 200 -
+127.0.0.1 - - [07/Apr/2026 06:22:01] "[32mPOST /login HTTP/1.1[0m" 302 -
+127.0.0.1 - - [07/Apr/2026 06:22:01] "[32mGET / HTTP/1.1[0m" 302 -
+127.0.0.1 - - [07/Apr/2026 06:22:01] "GET /tpus HTTP/1.1" 200 -
+127.0.0.1 - - [07/Apr/2026 06:22:01] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [07/Apr/2026 06:22:01] "GET /accounts HTTP/1.1" 200 -
+127.0.0.1 - - [07/Apr/2026 06:22:01] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [07/Apr/2026 06:22:02] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [07/Apr/2026 06:22:02] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+/home/jules/.pyenv/versions/3.12.13/lib/python3.12/site-packages/flask_sqlalchemy/query.py:30: SAWarning: fully NULL primary key identity cannot load any object.  This condition may raise an error in a future release.
+  rv = self.get(ident)
+127.0.0.1 - - [07/Apr/2026 06:22:02] "[33mGET /tpus/create HTTP/1.1[0m" 404 -
+127.0.0.1 - - [07/Apr/2026 06:27:16] "GET /login HTTP/1.1" 200 -
+127.0.0.1 - - [07/Apr/2026 06:27:16] "GET /static/css/styles.css HTTP/1.1" 200 -
+127.0.0.1 - - [07/Apr/2026 06:27:17] "[32mPOST /login HTTP/1.1[0m" 302 -
+127.0.0.1 - - [07/Apr/2026 06:27:17] "[32mGET / HTTP/1.1[0m" 302 -
+127.0.0.1 - - [07/Apr/2026 06:27:17] "GET /tpus HTTP/1.1" 200 -
+127.0.0.1 - - [07/Apr/2026 06:27:17] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [07/Apr/2026 06:27:17] "GET /accounts HTTP/1.1" 200 -
+127.0.0.1 - - [07/Apr/2026 06:27:17] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [07/Apr/2026 06:27:18] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [07/Apr/2026 06:27:18] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [07/Apr/2026 06:27:18] "[33mGET /tpus/create HTTP/1.1[0m" 404 -

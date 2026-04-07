@@ -1,82 +1,143 @@
 {% extends "base.html" %}
 
+{% block title %}Managed TPUs{% endblock %}
+
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-6">
-        <h2>Managed TPUs</h2>
+<div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+        <h2 class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">Managed TPUs</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">View and manage your Google Cloud TPUs</p>
     </div>
-    <div class="col-md-6 text-end">
-        <form class="d-flex justify-content-end" method="GET" action="{{ url_for('list_tpus_view') }}">
-            <select name="account_id" class="form-select w-auto me-2" onchange="this.form.submit()">
-                <option value="">Select GCP Account...</option>
-                {% for acc in accounts %}
-                <option value="{{ acc.id }}" {% if selected_account and selected_account.id == acc.id %}selected{% endif %}>{{ acc.name }}</option>
-                {% endfor %}
-            </select>
+
+    <div class="flex items-center">
+        <form method="GET" action="{{ url_for('list_tpus_view') }}" class="w-full sm:w-auto">
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i data-lucide="cloud-lightning" class="w-4 h-4 text-slate-400"></i>
+                </div>
+                <select name="account_id" class="form-select pl-9 pr-10 py-2 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:ring-indigo-500 focus:border-indigo-500 w-full sm:w-64 transition-shadow shadow-sm cursor-pointer" onchange="this.form.submit()">
+                    <option value="">Select GCP Account...</option>
+                    {% for acc in accounts %}
+                    <option value="{{ acc.id }}" {% if selected_account and selected_account.id == acc.id %}selected{% endif %}>{{ acc.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </form>
     </div>
 </div>
 
 {% if selected_account %}
-<div class="card mb-4">
-    <div class="card-header bg-body-secondary d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">TPUs in {{ selected_account.name }}</h5>
-        <a href="{{ url_for('create_tpu', account_id=selected_account.id) }}" class="btn btn-sm btn-primary">Create New TPU</a>
+<div class="card overflow-visible">
+    <!-- Header -->
+    <div class="card-header flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 px-6">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                <i data-lucide="server" class="w-5 h-5"></i>
+            </div>
+            <div>
+                <h3 class="font-semibold text-slate-800 dark:text-white">TPUs in {{ selected_account.name }}</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-mono">{{ selected_account.project_id }}</p>
+            </div>
+        </div>
+        <a href="{{ url_for('create_tpu', account_id=selected_account.id) }}" class="btn-primary inline-flex items-center gap-2 whitespace-nowrap group">
+            <i data-lucide="plus" class="w-4 h-4 transition-transform group-hover:scale-110"></i>
+            Create New TPU
+        </a>
     </div>
-    <div class="card-body p-0">
-        <table class="table table-striped mb-0" style="border-radius: 0 0 12px 12px; overflow: hidden;">
-            <thead>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left whitespace-nowrap">
+            <thead class="text-xs text-slate-500 dark:text-slate-400 uppercase bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700/60 font-medium">
                 <tr>
-                    <th>Name</th>
-                    <th>Zone</th>
-                    <th>Type</th>
-                    <th>Version</th>
-                    <th>Spot</th>
-                    <th>State</th>
-                    <th>Recreations</th>
-                    <th class="text-end">Actions</th>
+                    <th scope="col" class="px-6 py-4">Name</th>
+                    <th scope="col" class="px-6 py-4">Zone</th>
+                    <th scope="col" class="px-6 py-4">Type & Version</th>
+                    <th scope="col" class="px-6 py-4">Spot</th>
+                    <th scope="col" class="px-6 py-4">State</th>
+                    <th scope="col" class="px-6 py-4 text-center">Recreations</th>
+                    <th scope="col" class="px-6 py-4 text-right">Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-700/60">
                 {% for tpu in managed_tpus %}
-                <tr>
-                    <td class="align-middle">
-                        <strong>{{ tpu.current_name }}</strong><br>
-                        <small class="text-muted">Base: {{ tpu.base_name }}</small>
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                    <td class="px-6 py-4">
+                        <div class="font-medium text-slate-900 dark:text-white">{{ tpu.current_name }}</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Base: {{ tpu.base_name }}</div>
                     </td>
-                    <td class="align-middle">{{ tpu.zone }}</td>
-                    <td class="align-middle">{{ tpu.tpu_type }}</td>
-                    <td class="align-middle">{{ tpu.software_version }}</td>
-                    <td class="align-middle">
+                    <td class="px-6 py-4 text-slate-600 dark:text-slate-300">
+                        {{ tpu.zone }}
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-slate-900 dark:text-slate-200">{{ tpu.tpu_type }}</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate max-w-[150px]" title="{{ tpu.software_version }}">{{ tpu.software_version }}</div>
+                    </td>
+                    <td class="px-6 py-4">
                         {% if tpu.is_spot %}
-                            <span class="badge bg-warning text-dark">Yes</span>
+                            <span class="badge bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
+                                <i data-lucide="zap" class="w-3 h-3 mr-1"></i> Spot
+                            </span>
                         {% else %}
-                            <span class="badge bg-secondary">No</span>
+                            <span class="badge bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
+                                Standard
+                            </span>
                         {% endif %}
                     </td>
-                    <td class="align-middle">
-                        {% if tpu.last_known_state == 'ACTIVE' %}
-                            <span class="badge bg-success">{{ tpu.last_known_state }}</span>
-                        {% elif tpu.last_known_state in ['CREATING', 'STARTING', 'ACCEPTED', 'PROVISIONING'] %}
-                            <span class="badge bg-info">{{ tpu.last_known_state }}</span>
-                        {% elif tpu.last_known_state in ['PREEMPTED', 'STOPPED', 'SUSPENDED'] %}
-                            <span class="badge bg-warning text-dark">{{ tpu.last_known_state }}</span>
-                        {% else %}
-                            <span class="badge bg-danger">{{ tpu.last_known_state }}</span>
-                        {% endif %}
-                        <br><small class="text-muted">{{ tpu.last_checked_at.strftime('%H:%M:%S') if tpu.last_checked_at else 'Never' }}</small>
+                    <td class="px-6 py-4">
+                        <div class="flex flex-col items-start gap-1">
+                            {% if tpu.last_known_state == 'ACTIVE' %}
+                                <span class="badge bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+                                    {{ tpu.last_known_state }}
+                                </span>
+                            {% elif tpu.last_known_state in ['CREATING', 'STARTING', 'ACCEPTED', 'PROVISIONING'] %}
+                                <span class="badge bg-blue-100 text-blue-800 dark:bg-blue-500/10 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20">
+                                    <i data-lucide="loader-2" class="w-3 h-3 mr-1.5 animate-spin"></i>
+                                    {{ tpu.last_known_state }}
+                                </span>
+                            {% elif tpu.last_known_state in ['PREEMPTED', 'STOPPED', 'SUSPENDED'] %}
+                                <span class="badge bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
+                                    <i data-lucide="pause-circle" class="w-3 h-3 mr-1.5"></i>
+                                    {{ tpu.last_known_state }}
+                                </span>
+                            {% else %}
+                                <span class="badge bg-red-100 text-red-800 dark:bg-red-500/10 dark:text-red-400 border border-red-200 dark:border-red-500/20">
+                                    <i data-lucide="x-circle" class="w-3 h-3 mr-1.5"></i>
+                                    {{ tpu.last_known_state }}
+                                </span>
+                            {% endif %}
+                            <span class="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                                <i data-lucide="clock" class="w-3 h-3"></i>
+                                {{ tpu.last_checked_at.strftime('%H:%M:%S') if tpu.last_checked_at else 'Never' }}
+                            </span>
+                        </div>
                     </td>
-                    <td class="align-middle">{{ tpu.recreation_count }}</td>
-                    <td class="text-end align-middle">
-                        <form method="POST" action="{{ url_for('delete_managed_tpu', tpu_id=tpu.id) }}" class="d-inline" onsubmit="return confirm('Delete this TPU from GCP and stop tracking it?');">
+                    <td class="px-6 py-4 text-center">
+                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 text-xs font-semibold">
+                            {{ tpu.recreation_count }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <form method="POST" action="{{ url_for('delete_managed_tpu', tpu_id=tpu.id) }}" class="inline-block" onsubmit="return confirm('Delete this TPU from GCP and stop tracking it?');">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            <button type="submit" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-500/10 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500" title="Delete TPU">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
                         </form>
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="8" class="text-center text-muted py-4">No TPUs managed by this app found for this account.</td>
+                    <td colspan="7" class="px-6 py-12 text-center">
+                        <div class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
+                            <div class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
+                                <i data-lucide="inbox" class="w-6 h-6 opacity-50"></i>
+                            </div>
+                            <p class="text-sm">No TPUs managed by this app found for this account.</p>
+                            <a href="{{ url_for('create_tpu', account_id=selected_account.id) }}" class="mt-4 text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium">Create your first TPU &rarr;</a>
+                        </div>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -84,8 +145,29 @@
     </div>
 </div>
 {% elif accounts %}
-<div class="alert alert-info">Please select a GCP Account from the dropdown above to view or manage TPUs.</div>
+<div class="rounded-xl border border-blue-200 dark:border-blue-500/20 bg-blue-50 dark:bg-blue-500/10 p-4 flex items-start gap-3">
+    <i data-lucide="info" class="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5"></i>
+    <div>
+        <h4 class="text-sm font-medium text-blue-800 dark:text-blue-300">Select an Account</h4>
+        <p class="text-sm text-blue-600 dark:text-blue-400/80 mt-1">Please select a GCP Account from the dropdown above to view or manage TPUs.</p>
+    </div>
+</div>
 {% else %}
-<div class="alert alert-warning">No GCP Accounts configured. Please go to <a href="{{ url_for('accounts') }}">GCP Accounts</a> to add one first.</div>
+<div class="rounded-xl border border-amber-200 dark:border-amber-500/20 bg-amber-50 dark:bg-amber-500/10 p-4 flex items-start gap-3">
+    <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"></i>
+    <div>
+        <h4 class="text-sm font-medium text-amber-800 dark:text-amber-300">No Accounts Configured</h4>
+        <p class="text-sm text-amber-600 dark:text-amber-400/80 mt-1">
+            No GCP Accounts are configured yet. Please go to <a href="{{ url_for('accounts') }}" class="font-semibold underline hover:text-amber-700 dark:hover:text-amber-200">GCP Accounts</a> to add one first.
+        </p>
+    </div>
+</div>
 {% endif %}
+
+<!-- Ensure lucide icons inside dynamically loaded or conditional blocks are rendered -->
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        lucide.createIcons();
+    });
+</script>
 {% endblock %}

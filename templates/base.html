@@ -1,129 +1,267 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TPU Manager</title>
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
+
+    <!-- Tailwind CSS (via CDN with typography and forms plugins) -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom CSS Base components -->
+    <style type="text/tailwindcss">
+        @layer base {
+          body {
+            @apply antialiased text-slate-800 bg-slate-50 dark:bg-slate-900 dark:text-slate-200 transition-colors duration-300;
             font-family: 'Inter', sans-serif;
-            padding-top: 76px;
-            background-color: var(--bs-body-bg);
-            transition: background-color 0.3s ease, color 0.3s ease;
+          }
         }
-        .navbar {
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--bs-border-color);
+
+        @layer components {
+          .btn-primary {
+            @apply px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm transition-colors duration-200 font-medium focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900;
+          }
+          .btn-secondary {
+            @apply px-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg shadow-sm transition-colors duration-200 font-medium focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900;
+          }
+          .btn-danger {
+            @apply px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg shadow-sm transition-colors duration-200 font-medium focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900;
+          }
+          .btn-sm {
+            @apply px-3 py-1.5 text-sm;
+          }
+          .card {
+            @apply bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700/60 overflow-hidden;
+          }
+          .card-header {
+            @apply px-6 py-4 border-b border-slate-200 dark:border-slate-700/60 bg-slate-50/50 dark:bg-slate-800/50;
+          }
+          .form-control {
+            @apply w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:text-white transition-colors;
+          }
+          .form-label {
+            @apply block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1;
+          }
+          .form-select {
+            @apply w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:text-white transition-colors appearance-none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+          }
+          .dark .form-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+          }
+          .badge {
+            @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+          }
         }
-        .card {
-            border: 1px solid var(--bs-border-color-translucent);
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition: all 0.3s ease;
+    </style>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Fallback for unresolved Alpine elements */
+        [x-cloak] { display: none !important; }
+
+        /* Custom scrollbar for dark mode */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
         }
-        .card-header {
-            border-bottom: 1px solid var(--bs-border-color-translucent);
-            border-radius: 12px 12px 0 0 !important;
-            padding: 1rem 1.25rem;
+        ::-webkit-scrollbar-track {
+            background: transparent;
         }
-        .form-control, .form-select {
-            border-radius: 8px;
-            padding: 0.6rem 1rem;
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
         }
-        .btn {
-            border-radius: 8px;
-            font-weight: 500;
-            padding: 0.5rem 1rem;
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
         }
-        .badge {
-            font-weight: 500;
-            padding: 0.4em 0.8em;
-            border-radius: 6px;
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
-        /* Theme toggle switch styles */
-        .theme-switch {
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 8px;
-            border: 1px solid var(--bs-border-color);
-            background: var(--bs-tertiary-bg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
         }
     </style>
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg fixed-top bg-body-tertiary">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('index') }}">TPU Manager</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('list_tpus_view') }}">TPUs</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('accounts') }}">GCP Accounts</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('settings') }}">Settings</a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav align-items-center">
-                    <li class="nav-item me-3">
-                        <button class="theme-switch" id="themeToggle" title="Toggle Theme">
-                            🌓
-                        </button>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
-                    </li>
-                </ul>
-            </div>
+<body class="antialiased text-slate-800 bg-slate-50 dark:bg-slate-900 dark:text-slate-200 transition-colors duration-300 flex h-screen overflow-hidden"
+      x-data="{ sidebarOpen: false, darkMode: localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches) }"
+      x-init="$watch('darkMode', val => localStorage.setItem('theme', val ? 'dark' : 'light'));
+              if (darkMode) { document.documentElement.classList.add('dark') } else { document.documentElement.classList.remove('dark') }">
+
+    <!-- Sidebar Mobile Backdrop -->
+    <div x-show="sidebarOpen"
+         x-transition:enter="transition-opacity ease-linear duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity ease-linear duration-300"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-40 bg-slate-900/80 backdrop-blur-sm lg:hidden"
+         @click="sidebarOpen = false"></div>
+
+    <!-- Sidebar -->
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+           class="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/60 shadow-lg lg:shadow-none transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:flex-shrink-0 flex flex-col">
+
+        <!-- Logo -->
+        <div class="h-16 flex items-center px-6 border-b border-slate-200 dark:border-slate-700/60">
+            <a href="{{ url_for('index') }}" class="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold text-xl tracking-tight">
+                <i data-lucide="cloud" class="w-6 h-6"></i>
+                TPU Manager
+            </a>
         </div>
-    </nav>
 
-    <div class="container mt-4">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <!-- Nav Links -->
+        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+            <a href="{{ url_for('list_tpus_view') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {% if request.endpoint == 'list_tpus_view' or request.endpoint == 'create_tpu' %} bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300 {% else %} text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700/50 dark:hover:text-white {% endif %}">
+                <i data-lucide="server" class="w-5 h-5 {% if request.endpoint == 'list_tpus_view' or request.endpoint == 'create_tpu' %}text-indigo-600 dark:text-indigo-400{% else %}text-slate-400 dark:text-slate-500{% endif %}"></i>
+                Managed TPUs
+            </a>
+
+            <a href="{{ url_for('accounts') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {% if request.endpoint == 'accounts' %} bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300 {% else %} text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700/50 dark:hover:text-white {% endif %}">
+                <i data-lucide="users" class="w-5 h-5 {% if request.endpoint == 'accounts' %}text-indigo-600 dark:text-indigo-400{% else %}text-slate-400 dark:text-slate-500{% endif %}"></i>
+                GCP Accounts
+            </a>
+
+            <a href="{{ url_for('settings') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {% if request.endpoint == 'settings' %} bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300 {% else %} text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700/50 dark:hover:text-white {% endif %}">
+                <i data-lucide="settings" class="w-5 h-5 {% if request.endpoint == 'settings' %}text-indigo-600 dark:text-indigo-400{% else %}text-slate-400 dark:text-slate-500{% endif %}"></i>
+                Settings
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+        <!-- Top Navbar -->
+        <header class="h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 z-30 sticky top-0">
+            <!-- Mobile Menu Button -->
+            <button @click="sidebarOpen = true" class="lg:hidden text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 rounded-md p-1">
+                <span class="sr-only">Open sidebar</span>
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+
+            <!-- Page Title (desktop) -->
+            <div class="hidden lg:flex items-center gap-2">
+                <h1 class="text-sm font-semibold text-slate-800 dark:text-white">
+                    {% block title %}Dashboard{% endblock %}
+                </h1>
+            </div>
+
+            <!-- Right side icons -->
+            <div class="flex items-center gap-4 ml-auto">
+                <!-- Theme Toggle -->
+                <button @click="darkMode = !darkMode; if (darkMode) { document.documentElement.classList.add('dark') } else { document.documentElement.classList.remove('dark') }"
+                        class="p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        title="Toggle dark mode">
+                    <i data-lucide="sun" x-show="darkMode" x-cloak class="w-5 h-5"></i>
+                    <i data-lucide="moon" x-show="!darkMode" x-cloak class="w-5 h-5"></i>
+                </button>
+
+                {% if current_user.is_authenticated %}
+                <!-- User Menu Dropdown -->
+                <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                    <button @click="open = !open" class="flex items-center gap-2 p-1.5 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800">
+                            {{ current_user.username[0]|upper if current_user.username else 'A' }}
+                        </div>
+                        <span class="hidden sm:block">{{ current_user.username }}</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-500"></i>
+                    </button>
+
+                    <!-- Dropdown Panel -->
+                    <div x-show="open"
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="transform opacity-0 scale-95"
+                         x-transition:enter-end="transform opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="transform opacity-100 scale-100"
+                         x-transition:leave-end="transform opacity-0 scale-95"
+                         class="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700/60 py-1 z-50"
+                         x-cloak>
+                        <a href="{{ url_for('settings') }}" class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                            Account Settings
+                        </a>
+                        <div class="border-t border-slate-200 dark:border-slate-700 my-1"></div>
+                        <a href="{{ url_for('logout') }}" class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                            Log out
+                        </a>
                     </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+                </div>
+                {% endif %}
+            </div>
+        </header>
 
-        {% block content %}{% endblock %}
+        <!-- Main Workspace -->
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+            <div class="max-w-7xl mx-auto">
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="mb-6 space-y-3">
+                        {% for category, message in messages %}
+                            <div class="p-4 rounded-xl flex items-start gap-3 shadow-sm border
+                                {% if category == 'error' or category == 'danger' %} bg-red-50 border-red-200 text-red-800 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400
+                                {% elif category == 'success' %} bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400
+                                {% else %} bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-400 {% endif %}"
+                                x-data="{ show: true }" x-show="show" x-transition>
+
+                                <div class="flex-shrink-0 mt-0.5">
+                                    {% if category == 'error' or category == 'danger' %}
+                                        <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                                    {% elif category == 'success' %}
+                                        <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                                    {% else %}
+                                        <i data-lucide="info" class="w-5 h-5"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-1 text-sm font-medium">{{ message }}</div>
+                                <button @click="show = false" class="flex-shrink-0 ml-3 opacity-50 hover:opacity-100 transition-opacity focus:outline-none">
+                                    <i data-lucide="x" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                        {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Content Block -->
+                {% block content %}{% endblock %}
+            </div>
+        </main>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Initialize Lucide Icons -->
     <script>
-        // Theme toggling logic
-        const htmlElement = document.documentElement;
-        const themeToggle = document.getElementById('themeToggle');
-
-        // Check for saved theme preference or use system preference
-        const savedTheme = localStorage.getItem('tpu-manager-theme');
-        if (savedTheme) {
-            htmlElement.setAttribute('data-bs-theme', savedTheme);
-        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            htmlElement.setAttribute('data-bs-theme', 'dark');
-        }
-
-        themeToggle.addEventListener('click', () => {
-            const currentTheme = htmlElement.getAttribute('data-bs-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            htmlElement.setAttribute('data-bs-theme', newTheme);
-            localStorage.setItem('tpu-manager-theme', newTheme);
-        });
+        lucide.createIcons();
     </script>
+
     {% block scripts %}{% endblock %}
 </body>
 </html>
